@@ -4,7 +4,7 @@ from deche.core import Cache
 from deche.core import CacheExpiryMode
 
 
-memory_cache = Cache(fs_protocol="memory")
+memory_cache = Cache(fs_protocol="memory", prefix="/")
 path = ""
 
 
@@ -32,7 +32,7 @@ def exc_func(x=1):
     return x / 0
 
 
-fs_cache = Cache(fs_protocol="file", fs_storage_options=dict(auto_mkdir=True))
+fs_cache = Cache(fs_protocol="file", prefix="/tmp", fs_storage_options=dict(auto_mkdir=True))  # noqa
 path = str(tempfile.mkdtemp())
 
 

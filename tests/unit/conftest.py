@@ -1,6 +1,4 @@
-import os
 import time
-from unittest.mock import patch
 
 import pytest
 
@@ -18,19 +16,6 @@ def file_cleanup():
     for f in mem_fs.glob(path="/**/*"):
         if mem_fs.exists(f) and mem_fs.isfile(f):
             mem_fs.rm(f)
-
-
-@pytest.fixture(scope="function", autouse=True)
-def env_cleanup():
-    for k in tuple(os.environ):
-        if k.startswith("DECHE_"):
-            del os.environ[k]
-
-
-@pytest.fixture(scope="function", autouse=True)
-def patch_config():
-    with patch("deche.core.config.paths", return_value=[]):
-        yield
 
 
 @pytest.fixture()

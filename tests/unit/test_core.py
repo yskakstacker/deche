@@ -1,5 +1,4 @@
 import datetime
-import os
 import time
 from collections.abc import Iterable
 from unittest import mock
@@ -25,46 +24,48 @@ from deche.util import frozendict
 
 
 def test_init():
-    c = Cache(fs_protocol="memory")
+    c = Cache(fs_protocol="memory", prefix="/")
     assert isinstance(c.fs, MemoryFileSystem)
 
 
-def test_lazy_init():
-    c = Cache()
-    assert c.fs is None
-    assert c.prefix is None
-    os.environ.update(
-        {
-            "DECHE_FS__PROTOCOL": "memory",
-            "DECHE_FS__STORAGE_OPTIONS__KEY": "key",
-            "DECHE_FS__STORAGE_OPTIONS__SECRET": "secret",
-            "DECHE_FS__PREFIX": "/test",
-        }
-    )
-    assert isinstance(c.fs, MemoryFileSystem)
-    assert c.fs_protocol == "memory"
-    assert c.fs_storage_options == {"key": "key", "secret": "secret"}
-    assert c.prefix == "/test"
-
-
-def test_lazy_init_prefix():
-    c = Cache()
-    assert c.prefix is None
-    assert c._path(func) == "deche.test_utils.func"
-    os.environ.update(
-        {
-            "DECHE_FS__PROTOCOL": "memory",
-            "DECHE_FS__PREFIX": "/test",
-        }
-    )
-    assert c._path(func) == "/test/deche.test_utils.func"
-
-
-def test_lazy_init_fs():
-    c = Cache()
-    assert c.fs is None
-    os.environ.update({"DECHE_FS__PROTOCOL": "memory"})
-    assert isinstance(c.fs, MemoryFileSystem)
+#
+#
+# def test_lazy_init():
+#     c = Cache()
+#     assert c.fs is None
+#     assert c.prefix is None
+#     os.environ.update(
+#         {
+#             "DECHE_FS__PROTOCOL": "memory",
+#             "DECHE_FS__STORAGE_OPTIONS__KEY": "key",
+#             "DECHE_FS__STORAGE_OPTIONS__SECRET": "secret",
+#             "DECHE_FS__PREFIX": "/test",
+#         }
+#     )
+#     assert isinstance(c.fs, MemoryFileSystem)
+#     assert c.fs_protocol == "memory"
+#     assert c.fs_storage_options == {"key": "key", "secret": "secret"}
+#     assert c.prefix == "/test"
+#
+#
+# def test_lazy_init_prefix():
+#     c = Cache()
+#     assert c.prefix is None
+#     assert c._path(func) == "deche.test_utils.func"
+#     os.environ.update(
+#         {
+#             "DECHE_FS__PROTOCOL": "memory",
+#             "DECHE_FS__PREFIX": "/test",
+#         }
+#     )
+#     assert c._path(func) == "/test/deche.test_utils.func"
+#
+#
+# def test_lazy_init_fs():
+#     c = Cache()
+#     assert c.fs is None
+#     os.environ.update({"DECHE_FS__PROTOCOL": "memory"})
+#     assert isinstance(c.fs, MemoryFileSystem)
 
 
 @pytest.mark.parametrize(
@@ -75,7 +76,7 @@ def test_lazy_init_fs():
     ],
 )
 def test_prefix(prefix):
-    c = Cache(prefix=prefix)
+    c = Cache(fs_protocol="file", prefix=prefix)
     assert c.prefix == "/test"
 
 
@@ -236,7 +237,7 @@ def test_cache_ttl():
 def test_cache_append(path, cached_ttl_data):
     key = func_ttl_expiry_append.tokenize(1, 2)
     full_path = f"{path}/{func_ttl_expiry_append.__module__}.{func_ttl_expiry_append.__name__}"
-    c = Cache(fs_protocol="file", fs_storage_options={"auto_mkdir": True})
+    c = Cache(fs_protocol="file", prefix=full_path, fs_storage_options={"auto_mkdir": True})
     files = c.fs.ls(path=f"{full_path}/")
     assert c.fs.exists(path=f"{full_path}/{key}")
     assert len(files) == 5
@@ -306,7 +307,7 @@ def test_failing_validator():
 
 
 def test_cache_replace():
-    c1 = Cache(fs_protocol="memory", cache_ttl=10)
+    c1 = Cache(fs_protocol="memory", prefix="/", cache_ttl=10)
     assert c1.cache_ttl == 10
     c2 = c1.replace(cache_ttl=20)
     assert c2.cache_ttl == 20

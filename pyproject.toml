@@ -7,7 +7,6 @@ authors = ["Bradley McElroy <bradley.mcelroy@live.com>"]
 [tool.poetry.dependencies]
 python = "^3.9,<4.0"
 fsspec = ">=2021.10.1"
-donfig = ">=0.7.0"
 cloudpickle = ">=2.0.0"
 s3fs = {version = ">=2021.7.0", optional = true }
 

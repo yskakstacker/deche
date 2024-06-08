@@ -15,7 +15,6 @@ from typing import Any, Optional, Union
 import cloudpickle
 from fsspec import filesystem
 
-from deche import config
 from deche.inspection import args_kwargs_to_kwargs
 from deche.util import ValidationError
 from deche.util import ensure_path
@@ -82,9 +81,9 @@ def data_filter(f):
 
 @dataclass
 class Cache:
-    fs_protocol: Optional[str] = None
+    fs_protocol: str
+    prefix: str
     fs_storage_options: Optional[dict] = None
-    prefix: Optional[str] = None
     input_serializer: Callable = DEFAULT_SERIALIZER
     input_deserializer: Callable = DEFAULT_DESERIALIZER
     output_serializer: Callable = DEFAULT_SERIALIZER
@@ -120,24 +119,8 @@ class Cache:
     @property
     def fs(self):
         if self._fs is None:
-            if self.fs_protocol is not None:
-                self._fs = filesystem(protocol=self.fs_protocol, **(self.fs_storage_options or {}))
-            # Try and load from config
-            else:
-                self._load_from_config()
+            self._fs = filesystem(protocol=self.fs_protocol, **(self.fs_storage_options or {}))
         return self._fs
-
-    def _load_from_config(self):
-        config.refresh()
-        if config.get("fs.protocol", None) is not None:
-            logger.debug("Initialising deche from config")
-            self.fs_protocol = config["fs.protocol"]
-            logger.debug(f"fs_protocol: {self.fs_protocol}")
-            self.fs_storage_options = config.get("fs.storage_options", None)
-            logger.debug(f"fs_storage_options: {self.fs_storage_options}")
-            self.prefix = ensure_path(config.get("fs.prefix", None))
-            logger.debug(f"prefix: {self.prefix}")
-            self.__post_init__()
 
     def _path(self, func, kwargs: Optional[dict] = None):
         if not self._fs:
