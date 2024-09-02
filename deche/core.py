@@ -252,6 +252,7 @@ class Cache:
 
     def __call__(self, func):
         if inspect.iscoroutinefunction(func):
+
             @functools.wraps(func)
             async def wrapper(*args, **kwargs):
                 all_kwargs = args_kwargs_to_kwargs(func=func, args=args, kwargs=kwargs)
@@ -276,6 +277,7 @@ class Cache:
                 return output
 
         else:
+
             @functools.wraps(func)
             def wrapper(*args, **kwargs):
                 all_kwargs = args_kwargs_to_kwargs(func=func, args=args, kwargs=kwargs)
